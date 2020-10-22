@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/css/materialize.min.css">
+    <script src="/socket.io/socket.io.js"></script>
+    <title>Socket.io</title>
+</head>
+<style>
+    #map {
+        height: 100%;
+    }
+
+    html,
+    body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+</style>
+
+<body>
+   
+    <div class="grey lighten-5">
+
+        <div class="section no-pad-bot" id="index-banner">
+            <div class="container">
+                <h1 class="header center green-text">Geolocation</h1>
+                <div class="header center green-text" id="msg"></div>
+                <h3 class="header center green-text">ESP8266</h3>
+                <div class="row center">
+                    <div class="col s12 grey lighten-3" id="map" style="height:450px;">Google Maps Div</div>
+                </div>
+            </div>
+        </div>
+
+        
+
+    </div>
+    <script>
+        let map;
+
+        function initMap() {
+            var mapCanvas = document.getElementById("map");
+            var mapOptions = {
+                center: new google.maps.LatLng(-2.564360, -44.353548),
+                
+            }
+            map = new google.maps.Map(mapCanvas, mapOptions);
+        }
+
+        const socket = io.connect();
+        console.log(socket)
+
+        socket.on('locationEvent', function (locationData) {
+            console.log(locationData);
+
+            // city = locationData.city
+            // country = locationData.country
+            lat = locationData.latitude
+            lon = locationData.longitude
+            // query = locationData.query
+            // region = locationData.region
+
+            var markerInfoText = (
+                + "<br>" + "lat: " + lat + "  lon: " + lon + "<br>")
+
+            //$('#msg').append('connected with id:' + socket.id + '<br>' + markerInfoText)
+
+            socket.emit('msg', 'I am connected')
+            var infowindow = new google.maps.InfoWindow({
+                content: markerInfoText
+            });
+
+            map.setCenter(new google.maps.LatLng(lat, lon))
+            map.setZoom(14)
+            var marker = new google.maps.Marker({
+                position: { lat: lat, lng: lon },
+                map: map,
+                title: 'Hello World!'
+            });
+            marker.addListener('click', function () {
+                infowindow.open(map, marker);
+            });
+
+        })
+
+        socket.on('connect', function () {
+
+            //$('#msg').append('connected with id:' + socket.id + '<br>')
+
+            socket.emit('msg', 'I am connected')
+        })
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCJq_W9lJN4NTNoQTXKoUuUxpW0QV8etKY&callback=initMap"></script>
+
+</body>
+
+</html>
